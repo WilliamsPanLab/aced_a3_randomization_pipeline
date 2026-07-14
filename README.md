@@ -54,6 +54,15 @@ values, converts numeric-looking columns, and writes each CSV to its own tab
 in a single Excel workbook (`wn_csv` → "WebNeuro" tab, `ec_csv` → "EtCere" tab,
 fixed).
 
+The WebNeuro tab's columns are reordered: identifying/demographic info
+(`ID`, `Session`, `Age`, `Gender`, `TestDate`) first, then raw test
+variables, then normed (`_norm`) test variables — each group ordered by the
+WebNeuro test battery's administration order. The variable order is
+hardcoded in `pipeline.py` (`WN_RAW_VARIABLE_ORDER`).
+
+Only the last row of `wn_csv` is kept (a WebNeuro export can contain one row
+per session; the WebNeuro tab reflects only the most recent one).
+
 ## Test data
 
 `data/` is git-ignored and excluded from the built Docker image (see
