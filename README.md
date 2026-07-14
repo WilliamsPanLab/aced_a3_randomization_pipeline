@@ -14,10 +14,6 @@ Docker (no local Python needed):
 docker build -t rand-pipeline .
 ```
 
-Or open this folder in VS Code and choose "Dev Containers: Reopen in Container"
-(uses the same Dockerfile, plus the Claude Code CLI feature and a live mount
-of the repo — including the git-ignored `data/` folder — for local testing).
-
 ## Usage
 
 Local:
