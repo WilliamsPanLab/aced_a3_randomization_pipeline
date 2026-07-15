@@ -64,10 +64,12 @@ The last two rows of `wn_csv` are kept (a WebNeuro export can contain one row
 per session; the WebNeuro tab reflects the two most recent sessions).
 
 The workbook also gets a "Norm Score Chart" tab: a line chart of the normed
-scores for both sessions, one colored line per session (`WN_SESSION_COLORS`
-in `pipeline.py`). The y-axis is titled "Normed Score" with value ticks, and
-the x-axis shows every variable name (rotated 45° to fit all 64). The legend
-(bottom) lists the two session lines.
+scores for both sessions, one dashed line per session (`WN_SESSION_DASH_STYLES`
+in `pipeline.py`; both lines are the same color and told apart by dash
+pattern instead). Each variable's column is shaded with a background band
+colored by the WebNeuro test it belongs to (`WN_TEST_GROUPS`). The y-axis
+has value ticks, and the x-axis shows every variable name (rotated 45° to
+fit all 64). The legend (bottom) lists the two session lines.
 
 ## Test data
 
