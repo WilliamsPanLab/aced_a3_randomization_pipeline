@@ -124,6 +124,28 @@ def add_wn_composite_scores(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
+# Row-label prefixes identifying the QC metric rows to keep from the EtCere
+# export (Signal-to-Noise Ratio and Critical Motion Control rows).
+EC_QC_LABEL_PREFIXES = ("Signal-to-Noise Ratio", "Critical Motion Control")
+
+# 1-indexed row (excluding header) of the EtCere export holding the
+# "Referenced <participant>" row; its label includes the participant's name
+# (auto-populated by the export), so it's kept by fixed row position rather
+# than a label match.
+EC_REFERENCED_ROW = 10
+
+
+def filter_ec_rows(df: pd.DataFrame) -> pd.DataFrame:
+    """Keep only the "Referenced <participant>" row and the QC metric rows
+    from the EtCere export; the rest of its fixed report template
+    (raw/global scores, healthy-norm stats, etc.) isn't needed here.
+    """
+    label_col = df.columns[0]
+    is_qc = df[label_col].str.startswith(EC_QC_LABEL_PREFIXES, na=False)
+    referenced_row = df.iloc[[EC_REFERENCED_ROW - 1]]
+    return pd.concat([referenced_row, df[is_qc]], ignore_index=True)
+
+
 def write_excel(sheets: dict[str, pd.DataFrame], output_path: Path) -> None:
     with pd.ExcelWriter(output_path, engine="openpyxl") as writer:
         for sheet_name, df in sheets.items():
@@ -316,7 +338,7 @@ def main() -> None:
 
     df1 = order_wn_columns(load_csv(args.wn_csv)).head(2)
     df1 = add_wn_composite_scores(df1)
-    df2 = load_csv(args.ec_csv)
+    df2 = filter_ec_rows(load_csv(args.ec_csv))
 
     write_excel({WN_SHEET_NAME: df1, EC_SHEET_NAME: df2}, args.output)
     add_wn_norm_score_chart(args.output, df1)

@@ -69,6 +69,14 @@ The WebNeuro tab also gets 6 composite score columns appended at the end —
 `swoa_composite`, and `digit_composite` — each the row-wise mean of a subset
 of that test's normed variables (`WN_COMPOSITE_GROUPS` in `pipeline.py`).
 
+Only two rows of `ec_csv` are kept: the "Referenced <participant>" row (row
+10, `EC_REFERENCED_ROW` in `pipeline.py` — its label includes the
+participant's name, so it's picked by row position rather than a label
+match) and the QC metric rows (Signal-to-Noise Ratio, Critical Motion
+Control — matched by label prefix, `EC_QC_LABEL_PREFIXES`). The rest of the
+EtCere export's fixed report template (raw/global scores, healthy-norm
+stats, etc.) is dropped.
+
 The workbook also gets a "Norm Score Chart" tab: a line chart of the normed
 scores for both sessions, one dashed line per session (`WN_SESSION_DASH_STYLES`
 in `pipeline.py`; both lines are the same color and told apart by dash
