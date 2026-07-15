@@ -60,8 +60,14 @@ variables, then normed (`_norm`) test variables — each group ordered by the
 WebNeuro test battery's administration order. The variable order is
 hardcoded in `pipeline.py` (`WN_RAW_VARIABLE_ORDER`).
 
-Only the last row of `wn_csv` is kept (a WebNeuro export can contain one row
-per session; the WebNeuro tab reflects only the most recent one).
+The last two rows of `wn_csv` are kept (a WebNeuro export can contain one row
+per session; the WebNeuro tab reflects the two most recent sessions).
+
+The workbook also gets a "Norm Score Chart" tab: a line chart of the normed
+scores for both sessions, one colored line per session (`WN_SESSION_COLORS`
+in `pipeline.py`). The y-axis is titled "Normed Score" with value ticks, and
+the x-axis shows every variable name (rotated 45° to fit all 64). The legend
+(bottom) lists the two session lines.
 
 ## Test data
 
