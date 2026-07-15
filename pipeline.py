@@ -104,12 +104,12 @@ def order_wn_columns(df: pd.DataFrame) -> pd.DataFrame:
 # Composite score columns appended to the end of the WebNeuro tab: each is
 # the row-wise mean of a subset of that test's normed (_norm) variables.
 WN_COMPOSITE_GROUPS = [
-    ("Maze", ["emzcompk", "emzinitk", "emzerrk", "emzoverk", "emztrlsk"]),
-    ("GoNoGo", ["g2avrtk", "g2errk", "g2fnk", "g2fpk"]),
-    ("Stroop Word", ["vcrtne", "vi_sco1"]),
-    ("Stroop Color", ["vcrtne2", "vi_sco2"]),
-    ("Switching of Attention", ["esoadur2", "scavr0t2", "esoaerr2"]),
-    ("Digit Span", ["digitot", "digitsp"]),
+    ("maze_composite", ["emzcompk", "emzinitk", "emzerrk", "emzoverk", "emztrlsk"]),
+    ("gng_composite", ["g2avrtk", "g2errk", "g2fnk", "g2fpk"]),
+    ("stroopw_composite", ["vcrtne", "vi_sco1"]),
+    ("stroopc_composite", ["vcrtne2", "vi_sco2"]),
+    ("swoa_composite", ["esoadur2", "scavr0t2", "esoaerr2"]),
+    ("digit_composite", ["digitot", "digitsp"]),
 ]
 
 
