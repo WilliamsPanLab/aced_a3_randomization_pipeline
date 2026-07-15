@@ -101,6 +101,29 @@ def order_wn_columns(df: pd.DataFrame) -> pd.DataFrame:
     return df[ordered]
 
 
+# Composite score columns appended to the end of the WebNeuro tab: each is
+# the row-wise mean of a subset of that test's normed (_norm) variables.
+WN_COMPOSITE_GROUPS = [
+    ("Maze", ["emzcompk", "emzinitk", "emzerrk", "emzoverk", "emztrlsk"]),
+    ("GoNoGo", ["g2avrtk", "g2errk", "g2fnk", "g2fpk"]),
+    ("Stroop Word", ["vcrtne", "vi_sco1"]),
+    ("Stroop Color", ["vcrtne2", "vi_sco2"]),
+    ("Switching of Attention", ["esoadur2", "scavr0t2", "esoaerr2"]),
+    ("Digit Span", ["digitot", "digitsp"]),
+]
+
+
+def add_wn_composite_scores(df: pd.DataFrame) -> pd.DataFrame:
+    """Append one composite-score column per test to the end of the
+    dataframe: the row-wise mean of that test's normed variables.
+    """
+    df = df.copy()
+    for name, raw_names in WN_COMPOSITE_GROUPS:
+        norm_cols = [f"{n}_norm" for n in raw_names if f"{n}_norm" in df.columns]
+        df[name] = df[norm_cols].mean(axis=1) if norm_cols else pd.NA
+    return df
+
+
 def write_excel(sheets: dict[str, pd.DataFrame], output_path: Path) -> None:
     with pd.ExcelWriter(output_path, engine="openpyxl") as writer:
         for sheet_name, df in sheets.items():
@@ -292,6 +315,7 @@ def main() -> None:
     args = parser.parse_args()
 
     df1 = order_wn_columns(load_csv(args.wn_csv)).head(2)
+    df1 = add_wn_composite_scores(df1)
     df2 = load_csv(args.ec_csv)
 
     write_excel({WN_SHEET_NAME: df1, EC_SHEET_NAME: df2}, args.output)

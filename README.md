@@ -64,6 +64,11 @@ The first two rows of `wn_csv` are kept (a WebNeuro export can contain one row
 per session; the WebNeuro tab reflects the first two sessions — screening and
 baseline).
 
+The WebNeuro tab also gets 6 composite score columns appended at the end —
+Maze, GoNoGo, Stroop Word, Stroop Color, Switching of Attention, and Digit
+Span — each the row-wise mean of a subset of that test's normed variables
+(`WN_COMPOSITE_GROUPS` in `pipeline.py`).
+
 The workbook also gets a "Norm Score Chart" tab: a line chart of the normed
 scores for both sessions, one dashed line per session (`WN_SESSION_DASH_STYLES`
 in `pipeline.py`; both lines are the same color and told apart by dash
