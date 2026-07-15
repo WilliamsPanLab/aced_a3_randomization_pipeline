@@ -111,6 +111,7 @@ def write_excel(sheets: dict[str, pd.DataFrame], output_path: Path) -> None:
 # instead (older session first).
 WN_LINE_COLOR = "000000"
 WN_SESSION_DASH_STYLES = ["solid", "dash"]
+WN_SESSION_LABELS = ["Screening", "Baseline"]
 
 CHART_DATA_SHEET_NAME = "_NormChartData"
 CHART_SHEET_NAME = "Norm Score Chart"
@@ -175,8 +176,7 @@ def add_wn_norm_score_chart(output_path: Path, wn_df: pd.DataFrame) -> None:
     session_titles = []
     session_values = []
     for row_idx in range(len(wn_df)):
-        session = wn_df.iloc[row_idx].get("Session", row_idx + 1)
-        title = f"Session {session}"
+        title = WN_SESSION_LABELS[row_idx] if row_idx < len(WN_SESSION_LABELS) else f"Session {row_idx + 1}"
         values = [wn_df.iloc[row_idx][c] for c in categories]
         data_ws.append([title, *values])
         session_titles.append(title)
@@ -291,7 +291,7 @@ def main() -> None:
     parser.add_argument("output", type=Path, help="Path to output .xlsx file")
     args = parser.parse_args()
 
-    df1 = order_wn_columns(load_csv(args.wn_csv)).tail(2)
+    df1 = order_wn_columns(load_csv(args.wn_csv)).head(2)
     df2 = load_csv(args.ec_csv)
 
     write_excel({WN_SHEET_NAME: df1, EC_SHEET_NAME: df2}, args.output)
