@@ -66,8 +66,10 @@ WN_TEST_GROUPS = [
         "gettrtA", "gettrtD", "gettrtF", "gettrtH", "gettrtN", "gettrtS",
     ], "C900E9"),
     ("Digit Span (Forward)", ["digitot", "digitsp"], "BE6900"),
-    ("Verbal Interference", ["vi_difrt", "vcrtne2", "vi_sco2", "vcrtne", "vi_sco1"], "0095AC"),
-    ("Switching of Attention", ["esoadur1", "esoaerr1", "scavr0t1", "esoadur2", "esoaerr2", "scavr0t2"], "008600"),
+    ("Stroop Word", ["vcrtne", "vi_sco1"], "0095AC"),
+    ("Stroop Color", ["vi_difrt", "vcrtne2", "vi_sco2"], "A32638"),
+    ("Switching of Attention 1", ["esoadur1", "esoaerr1", "scavr0t1"], "008600"),
+    ("Switching of Attention 2", ["esoadur2", "esoaerr2", "scavr0t2"], "B8860B"),
     ("GoNo-Go", ["g2avrtk", "g2errk", "g2fnk", "g2fpk", "g2sdrtk"], "4B32B4"),
     ("Delayed Memory", ["ctmrec4"], "E62B35"),
     ("Emotion Priming", [
