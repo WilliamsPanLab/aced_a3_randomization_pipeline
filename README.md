@@ -19,8 +19,12 @@ docker build -t rand-pipeline .
 Local:
 
 ```
-python pipeline.py <wn_csv> <ec_csv> <output.xlsx>
+python pipeline.py <wn_csv> <ec_csv> <output.xlsx> [--subset-wn-tests]
 ```
+
+`--subset-wn-tests` restricts the WebNeuro tab/chart to the tests used by
+the composite scores plus Switching of Attention 1 (see below); omit it to
+keep every WebNeuro test.
 
 Docker — mount your current directory to `/workspace` so input/output files
 are visible on both sides:
@@ -59,6 +63,12 @@ The WebNeuro tab's columns are reordered: identifying/demographic info
 variables, then normed (`_norm`) test variables — each group ordered by the
 WebNeuro test battery's administration order. The variable order is
 hardcoded in `pipeline.py` (`WN_RAW_VARIABLE_ORDER`).
+
+With `--subset-wn-tests`, only the tests used by the composite scores, plus
+Switching of Attention 1, are kept — Digit Span (Forward), Stroop Word,
+Stroop Color, Switching of Attention 1/2, GoNo-Go, and Maze
+(`WN_REPORTED_TESTS` in `pipeline.py`). Every other WebNeuro test's
+raw/normed variables are dropped from the tab and chart.
 
 The first two rows of `wn_csv` are kept (a WebNeuro export can contain one row
 per session; the WebNeuro tab reflects the first two sessions — screening and

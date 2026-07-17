@@ -80,26 +80,43 @@ WN_TEST_GROUPS = [
     ("Maze", ["emzcompk", "emzerrk", "emzinitk", "emzoverk", "emztrlsk"], "DC4400"),
 ]
 
-WN_RAW_VARIABLE_ORDER = [name for _, names, _ in WN_TEST_GROUPS for name in names]
+WN_ALL_RAW_VARIABLE_ORDER = [name for _, names, _ in WN_TEST_GROUPS for name in names]
+WN_ALL_NORMED_VARIABLE_ORDER = [f"{name}_norm" for name in WN_ALL_RAW_VARIABLE_ORDER]
 
-# Normed counterparts follow the same order as their raw variables.
-WN_NORMED_VARIABLE_ORDER = [f"{name}_norm" for name in WN_RAW_VARIABLE_ORDER]
+# When column subsetting is requested (see --subset-wn-tests), only these
+# tests' variables are kept: the ones used by the composite scores
+# (WN_COMPOSITE_GROUPS), plus Switching of Attention 1 (its "2" counterpart
+# is already covered by swoa_composite).
+WN_REPORTED_TESTS = {
+    "Digit Span (Forward)",
+    "Stroop Word",
+    "Stroop Color",
+    "Switching of Attention 1",
+    "Switching of Attention 2",
+    "GoNo-Go",
+    "Maze",
+}
+
+WN_SUBSET_RAW_VARIABLE_ORDER = [
+    name for test_name, names, _ in WN_TEST_GROUPS for name in names if test_name in WN_REPORTED_TESTS
+]
+WN_SUBSET_NORMED_VARIABLE_ORDER = [f"{name}_norm" for name in WN_SUBSET_RAW_VARIABLE_ORDER]
 
 
-def order_wn_columns(df: pd.DataFrame) -> pd.DataFrame:
+def order_wn_columns(df: pd.DataFrame, subset: bool = False) -> pd.DataFrame:
     """Reorder WebNeuro columns: identifying/demographic info first, then
     raw test variables, then normed test variables, each ordered by the
-    WebNeuro test battery's administration order (testorder).
+    WebNeuro test battery's administration order (testorder). When `subset`
+    is set, test variables outside WN_REPORTED_TESTS are dropped instead.
     """
-    known = set(WN_RAW_VARIABLE_ORDER) | set(WN_NORMED_VARIABLE_ORDER)
+    raw_order = WN_SUBSET_RAW_VARIABLE_ORDER if subset else WN_ALL_RAW_VARIABLE_ORDER
+    normed_order = WN_SUBSET_NORMED_VARIABLE_ORDER if subset else WN_ALL_NORMED_VARIABLE_ORDER
+
+    known = set(WN_ALL_RAW_VARIABLE_ORDER) | set(WN_ALL_NORMED_VARIABLE_ORDER)
     identifying = [c for c in WN_IDENTIFYING_COLUMNS if c in df.columns]
     identifying += [c for c in df.columns if c not in known and c not in identifying]
 
-    ordered = (
-        identifying
-        + [c for c in WN_RAW_VARIABLE_ORDER if c in df.columns]
-        + [c for c in WN_NORMED_VARIABLE_ORDER if c in df.columns]
-    )
+    ordered = identifying + [c for c in raw_order if c in df.columns] + [c for c in normed_order if c in df.columns]
     return df[ordered]
 
 
@@ -210,7 +227,7 @@ def add_wn_norm_score_chart(output_path: Path, wn_df: pd.DataFrame) -> None:
     dashed line per session, plotted against every normed test variable,
     with each variable's column shaded by the test it belongs to.
     """
-    categories = [c for c in WN_NORMED_VARIABLE_ORDER if c in wn_df.columns]
+    categories = [c for c in WN_ALL_NORMED_VARIABLE_ORDER if c in wn_df.columns]
     if not categories:
         return
     n_cols = len(categories)
@@ -336,9 +353,14 @@ def main() -> None:
     parser.add_argument("wn_csv", type=Path, help="Path to WebNeuro input CSV")
     parser.add_argument("ec_csv", type=Path, help="Path to EtCere input CSV")
     parser.add_argument("output", type=Path, help="Path to output .xlsx file")
+    parser.add_argument(
+        "--subset-wn-tests",
+        action="store_true",
+        help="Keep only the WebNeuro tests used by the composite scores, plus Switching of Attention 1 (WN_REPORTED_TESTS)",
+    )
     args = parser.parse_args()
 
-    df1 = order_wn_columns(load_csv(args.wn_csv)).head(2)
+    df1 = order_wn_columns(load_csv(args.wn_csv), subset=args.subset_wn_tests).head(2)
     df1 = add_wn_composite_scores(df1)
     df2 = filter_ec_rows(load_csv(args.ec_csv))
 
