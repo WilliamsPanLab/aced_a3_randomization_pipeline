@@ -177,6 +177,15 @@ WN_LINE_COLOR = "000000"
 WN_SESSION_DASH_STYLES = ["solid", "dash"]
 WN_SESSION_LABELS = ["Screening", "Baseline"]
 
+# Reference lines marking the 0 and -0.5 normed-score thresholds, so it's
+# clear which points on the chart fall on either side of them. Red (distinct
+# from the session lines' black) says "this is a threshold, not a session";
+# dotted/dash-dot styles (distinct from the session lines' solid/dash) then
+# tell the two thresholds apart from each other without reusing the dash
+# style that already means "which session."
+WN_THRESHOLD_LINE_COLOR = "FF0000"
+WN_THRESHOLD_LINES = [("0", 0.0, "sysDot"), ("-0.5", -0.5, "lgDashDot")]
+
 CHART_DATA_SHEET_NAME = "_NormChartData"
 CHART_SHEET_NAME = "Norm Score Chart"
 
@@ -247,6 +256,15 @@ def add_wn_norm_score_chart(output_path: Path, wn_df: pd.DataFrame) -> None:
         session_values.append(values)
     n_lines = len(wn_df)
 
+    threshold_titles = []
+    threshold_values = []
+    for title, value, _dash_style in WN_THRESHOLD_LINES:
+        values = [value] * n_cols
+        data_ws.append([title, *values])
+        threshold_titles.append(title)
+        threshold_values.append(values)
+    n_threshold_lines = len(WN_THRESHOLD_LINES)
+
     # Background bands need to span the value axis's full range, so pin that
     # range explicitly instead of leaving it to autoscale, and size each
     # band's bar to reach from 0 out to that range's edge.
@@ -267,7 +285,7 @@ def add_wn_norm_score_chart(output_path: Path, wn_df: pd.DataFrame) -> None:
             band_specs.append(("_bg_neg", [y_min] * n_cols))
 
     cats_ref = Reference(data_ws, min_col=2, max_col=n_cols + 1, min_row=1, max_row=1)
-    data_ref = Reference(data_ws, min_col=1, max_col=n_cols + 1, min_row=2, max_row=n_lines + 1)
+    data_ref = Reference(data_ws, min_col=1, max_col=n_cols + 1, min_row=2, max_row=n_lines + n_threshold_lines + 1)
 
     # The background bands are a bar chart combined with the line chart:
     # BarChart is the base object (its series render first/lowest, per OOXML
@@ -324,9 +342,18 @@ def add_wn_norm_score_chart(output_path: Path, wn_df: pd.DataFrame) -> None:
     line_chart = LineChart()
     line_chart.add_data(data_ref, titles_from_data=True, from_rows=True)
     line_chart.set_categories(cats_ref)
-    for series, dash_style, title, values in zip(line_chart.series, WN_SESSION_DASH_STYLES, session_titles, session_values):
+    session_series = line_chart.series[: len(session_titles)]
+    threshold_series = line_chart.series[len(session_titles) :]
+    for series, dash_style, title, values in zip(session_series, WN_SESSION_DASH_STYLES, session_titles, session_values):
         series.graphicalProperties = GraphicalProperties(
             ln=LineProperties(solidFill=WN_LINE_COLOR, w=19050, prstDash=dash_style)
+        )
+        series.marker = Marker(symbol="none")
+        series.smooth = False
+        _cache_series(series, cats_formula, categories, title, values)
+    for series, (title, _value, dash_style), values in zip(threshold_series, WN_THRESHOLD_LINES, threshold_values):
+        series.graphicalProperties = GraphicalProperties(
+            ln=LineProperties(solidFill=WN_THRESHOLD_LINE_COLOR, w=12700, prstDash=dash_style)
         )
         series.marker = Marker(symbol="none")
         series.smooth = False
@@ -338,9 +365,13 @@ def add_wn_norm_score_chart(output_path: Path, wn_df: pd.DataFrame) -> None:
     # overlay=False reserves dedicated space for the legend below the plot
     # area, so it doesn't sit on top of the rotated x-axis labels.
     band_chart.legend.overlay = False
-    # Background band series come first (idx 0, 1, ...); hide them so the
-    # legend only lists the session lines.
-    band_chart.legend.legendEntry = [LegendEntry(idx=i, delete=True) for i in range(len(bg_row_refs))]
+    # Series order in the combined chart is: background bands, then session
+    # lines, then threshold lines. Hide everything but the session lines so
+    # the legend only lists those.
+    hidden_idx = list(range(len(bg_row_refs))) + list(
+        range(len(bg_row_refs) + len(session_titles), len(bg_row_refs) + len(session_titles) + n_threshold_lines)
+    )
+    band_chart.legend.legendEntry = [LegendEntry(idx=i, delete=True) for i in hidden_idx]
 
     chart_ws = wb.create_sheet(CHART_SHEET_NAME)
     chart_ws.add_chart(band_chart, "A1")
