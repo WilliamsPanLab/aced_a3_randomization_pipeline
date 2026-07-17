@@ -172,9 +172,10 @@ def write_excel(sheets: dict[str, pd.DataFrame], output_path: Path) -> None:
 
 
 # One line color for every session; sessions are told apart by dash style
-# instead (older session first).
+# and marker shape instead (older session first).
 WN_LINE_COLOR = "000000"
 WN_SESSION_DASH_STYLES = ["solid", "dash"]
+WN_SESSION_MARKER_SYMBOLS = ["circle", "triangle"]
 WN_SESSION_LABELS = ["Screening", "Baseline"]
 
 # Reference lines marking the 0 and -0.5 normed-score thresholds, so it's
@@ -344,11 +345,17 @@ def add_wn_norm_score_chart(output_path: Path, wn_df: pd.DataFrame) -> None:
     line_chart.set_categories(cats_ref)
     session_series = line_chart.series[: len(session_titles)]
     threshold_series = line_chart.series[len(session_titles) :]
-    for series, dash_style, title, values in zip(session_series, WN_SESSION_DASH_STYLES, session_titles, session_values):
+    for series, dash_style, marker_symbol, title, values in zip(
+        session_series, WN_SESSION_DASH_STYLES, WN_SESSION_MARKER_SYMBOLS, session_titles, session_values
+    ):
         series.graphicalProperties = GraphicalProperties(
             ln=LineProperties(solidFill=WN_LINE_COLOR, w=19050, prstDash=dash_style)
         )
-        series.marker = Marker(symbol="none")
+        series.marker = Marker(
+            symbol=marker_symbol,
+            size=3,
+            spPr=GraphicalProperties(solidFill=WN_LINE_COLOR, ln=LineProperties(solidFill=WN_LINE_COLOR)),
+        )
         series.smooth = False
         _cache_series(series, cats_formula, categories, title, values)
     for series, (title, _value, dash_style), values in zip(threshold_series, WN_THRESHOLD_LINES, threshold_values):
